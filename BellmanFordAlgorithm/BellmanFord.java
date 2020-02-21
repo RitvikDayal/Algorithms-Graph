@@ -1,69 +1,91 @@
- package BellmanFordAlgorithm;
+import java.util.*; 
+import java.lang.*; 
+import java.io.*; 
+import java.util.Scanner;
 
-import java.util.List;
+class BellmanFord { 
+    class Edge { 
+        int src, dest, weight; 
+        Edge() 
+        { 
+            src = dest = weight = 0; 
+        } 
+    }; 
+  
+    int V, E; 
+    Edge edge[]; 
+  
+    BellmanFord(int v, int e) 
+    { 
+        V = v; 
+        E = e; 
+        edge = new Edge[e]; 
+        for (int i = 0; i < e; ++i) 
+            edge[i] = new Edge(); 
+    } 
+  
+    void BellmanFord(BellmanFord graph, int src) 
+    { 
+        int V = graph.V, E = graph.E; 
+        int dist[] = new int[V]; 
 
-public class BellmanFord {
+        for (int i = 0; i < V; ++i) 
+            dist[i] = Integer.MAX_VALUE; 
+        dist[src] = 0; 
 
-	private List<Vertex> vertexList;
-	private List<Edge> edgeList;
+        for (int i = 1; i < V; ++i) { 
+            for (int j = 0; j < E; ++j) { 
+                int u = graph.edge[j].src; 
+                int v = graph.edge[j].dest; 
+                int weight = graph.edge[j].weight; 
+                if (dist[u] != Integer.MAX_VALUE && dist[u] + weight < dist[v]) 
+                    dist[v] = dist[u] + weight; 
+            } 
+        } 
 
-	public BellmanFord(List<Vertex> vertexList, List<Edge> edgeList) {
-		this.vertexList = vertexList;
-		this.edgeList = edgeList;
-	}
+        for (int j = 0; j < E; ++j) { 
+            int u = graph.edge[j].src; 
+            int v = graph.edge[j].dest; 
+            int weight = graph.edge[j].weight; 
+            if (dist[u] != Integer.MAX_VALUE && dist[u] + weight < dist[v]) { 
+                System.out.println("Graph contains negative weight cycle"); 
+                return; 
+            } 
+        } 
+        printArr(dist, V); 
+    } 
 
-	public void bellmanFord(Vertex sourceVertex, Vertex targetVertex) {
+    void printArr(int dist[], int V) 
+    { 
+        System.out.println("Vertex Distance from Source"); 
+        for (int i = 0; i < V; ++i) 
+            System.out.println(i + "\t\t" + dist[i]); 
+    } 
 
-		sourceVertex.setMinDistance(0);
+    public static void main(String[] args) 
+    { 
+        Scanner inp = new Scanner(System.in); 
+        
+        System.out.println("Enter number of vertices: ");
+        int V = inp.nextInt();
+        System.out.println("Enter number of edges: ");
+        int E = inp.nextInt();
 
-		for (Vertex vertex : vertexList) {
-			for (Edge edge : edgeList) {
-				
-				/*
-				 * ez adja a O(V*E) complexityt mindig, nem lesz olyan mint Djokstra algoritmusnal ahol a priority queue
-				 * 	pontos implekemntalasatol fugg a futasi ido
-				 * 		Itt lehet hasznalni listat vagy arrayt teljesen mindegx !!!
-				 *      DE ... lehet hogy O(E) = V*V es igy egy V*V*V algoritmust kapunk ... tehat lassabb a Dijkstra algoritmusnal mindig
-				 *      		~ a Dijkstra akar linearois time cmplecxitivel is tudna futni
-				 */
+        BellmanFord graph = new BellmanFord(V, E);
 
-				if ( edge.getStartVertex().getMinDistance() == Integer.MAX_VALUE ) {
-					continue;
-				}
+        for(int i=0; i<E; i++)
+        {
+            System.out.println("Enter Source for Egde"+(i+1)+" :");
+            graph.edge[i].src = inp.nextInt();
+            System.out.println("Enter Destination for Egde"+(i+1)+" :");
+            graph.edge[i].dest = inp.nextInt();
+            System.out.println("Enter Weight for Egde"+(i+1)+" :");
+            graph.edge[i].weight = inp.nextInt();
 
-				int newDistance = edge.getStartVertex().getMinDistance() + edge.getWeight();
+        }
+        System.out.println("Enter Source to start : ");
+		int s = inp.nextInt();
 
-				if (newDistance < edge.getTargetVertex().getMinDistance()) {
-					edge.getTargetVertex().setMinDistance(newDistance);
-					edge.getTargetVertex().setPreviousVertex(edge.getStartVertex());
-				}
-			}
-		}
-
-		for (Edge edge : edgeList) {
-			if (edge.getStartVertex().getMinDistance() != Integer.MAX_VALUE) {
-				if ( hasCycle(edge) ) {
-					System.out.println("Negative edge weight cycles detected!");
-					return;
-				}
-			}
-		}
-
-		if (targetVertex.getMinDistance() != Integer.MAX_VALUE) {
-			System.out.println("There is a shortest path from sourco to target, with cost: " + targetVertex.getMinDistance());
-			
-			Vertex actualVErtex = targetVertex;
-			while( actualVErtex.getPreviousVertex() != null ){
-				System.out.print(actualVErtex+"-");
-				actualVErtex=actualVErtex.getPreviousVertex();
-			}
-			
-		} else {
-			System.out.println("There is no path from source to target...");
-		}
-	}
-	
-	private boolean hasCycle(Edge edge){
-		return edge.getTargetVertex().getMinDistance() > edge.getStartVertex().getMinDistance() + edge.getWeight();
-	}
+        graph.BellmanFord(graph, s); 
+    } 
 }
